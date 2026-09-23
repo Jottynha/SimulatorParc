@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Master | Simulador de Políticas de Negociação</title>
+  <link rel="icon" href="img/simbolo-master.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <img src="img/logo-master.png" alt="Master" class="logo">
+      <div class="brand-copy">
+        <span>Simulador de Políticas de Negociação</span>
+        <small>Ferramenta de análise de cenários</small>
+      </div>
+      <div class="top-actions">
+        <button class="ghost-btn" id="btnReset">Restaurar</button>
+        <button class="primary-btn" id="btnSave">Salvar cenário</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div>
+        <span class="eyebrow">MASTER · COBRANÇA</span>
+        <h1>Compare políticas, descontos e estruturas de pagamento</h1>
+        <p>Teste valores, tipo de desconto, quantidade de boletos e valor de entrada sem alterar a planilha original.</p>
+      </div>
+      <div class="hero-note">
+        <span class="status-dot"></span>
+        <div>
+          <strong>Modo de simulação</strong>
+          <small>Os cenários aqui criados são comparativos e não alteram a política oficial.</small>
+        </div>
+      </div>
+    </section>
+
+    <nav class="tabs">
+      <button class="tab active" data-tab="simulador">Simulador</button>
+      <button class="tab" data-tab="comparador">Comparador</button>
+      <button class="tab" data-tab="politicas">Políticas oficiais</button>
+      <button class="tab" data-tab="historico">Cenários salvos</button>
+    </nav>
+
+    <section class="tab-panel active" id="tab-simulador">
+      <div class="grid-layout">
+        <div class="card form-card">
+          <div class="card-header">
+            <div>
+              <span class="card-kicker">1 · CENÁRIO</span>
+              <h2>Configure a negociação</h2>
+            </div>
+            <span class="badge" id="policyBadge">Política livre</span>
+          </div>
+
+          <div class="section-block">
+            <h3>Dados da dívida</h3>
+            <div class="form-grid two">
+              <label>Perfil
+                <select id="perfil">
+                  <option value="B2C">B2C</option>
+                  <option value="B2B">B2B</option>
+                  <option value="LINK">Link Dedicado</option>
+                </select>
+              </label>
+              <label>Período do débito
+                <select id="periodo">
+                  <option value="2020-2023">2020–2023</option>
+                  <option value="2024">2024</option>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                </select>
+              </label>
+              <label>Valor original (R$)
+                <input id="original" type="number" min="0" step="0.01" value="1000">
+              </label>
+              <label>Juros / multas (R$)
+                <input id="juros" type="number" min="0" step="0.01" value="100">
+              </label>
+            </div>
+          </div>
+
+          <div class="section-block">
+            <h3>Política de desconto</h3>
+            <div class="form-grid two">
+              <label>Tipo de desconto
+                <select id="tipoDesconto">
+                  <option value="total">Sobre original + juros</option>
+                  <option value="juros">Somente sobre juros</option>
+                  <option value="original">Somente sobre original</option>
+                  <option value="none">Sem desconto</option>
+                </select>
+              </label>
+              <label>Taxa de desconto (%)
+                <input id="desconto" type="number" min="0" max="100" step="0.1" value="0">
+              </label>
+            </div>
+            <div class="quick-pills" id="discountPills"></div>
+          </div>
+
+          <div class="section-block">
+            <h3>Forma de pagamento</h3>
+            <div class="form-grid two">
+              <label>Modalidade
+                <select id="modalidade">
+                  <option value="parcelado">Parcelado</option>
+                  <option value="avista">À vista</option>
+                </select>
+              </label>
+              <label>Método
+                <select id="metodo">
+                  <option value="boleto">Boleto</option>
+                  <option value="pix">PIX</option>
+                  <option value="cartao">Cartão</option>
+                </select>
+              </label>
+              <label>Quantidade de boletos / parcelas
+                <select id="parcelas">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3" selected>3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                </select>
+              </label>
+              <label>Valor de entrada (%)
+                <input id="entradaPct" type="number" min="0" max="100" step="0.1" value="50">
+              </label>
+            </div>
+            <div class="validation" id="validationBox"></div>
+          </div>
+
+          <div class="section-block">
+            <h3>Estrutura do acordo</h3>
+            <div class="schedule-preview" id="schedulePreview"></div>
+            <p class="helper">No modo livre, a entrada é fixa e o saldo restante é distribuído igualmente entre as parcelas seguintes. Para 3 parcelas, a configuração padrão da política atual é 50% + 25% + 25%.</p>
+          </div>
+
+          <div class="action-row">
+            <button class="secondary-btn" id="btnApplyPolicy">Carregar política oficial</button>
+            <button class="primary-btn" id="btnSimular">Atualizar simulação</button>
+          </div>
+        </div>
+
+        <div class="right-stack">
+          <div class="card result-card">
+            <div class="card-header">
+              <div>
+                <span class="card-kicker">2 · RESULTADO</span>
+                <h2>Visão financeira</h2>
+              </div>
+              <span class="result-tag" id="resultTag">Simulação</span>
+            </div>
+            <div class="kpi-grid">
+              <div class="kpi"><span>Valor bruto</span><strong id="kpiBruto">R$ 0,00</strong></div>
+              <div class="kpi"><span>Desconto</span><strong id="kpiDesconto">R$ 0,00</strong></div>
+              <div class="kpi accent"><span>Valor líquido</span><strong id="kpiLiquido">R$ 0,00</strong></div>
+              <div class="kpi accent2"><span>Entrada</span><strong id="kpiEntrada">R$ 0,00</strong></div>
+            </div>
+            <div class="mini-metrics">
+              <div><span>Desconto efetivo</span><strong id="mDesconto">0%</strong></div>
+              <div><span>Recebido até D+30</span><strong id="mD30">R$ 0,00</strong></div>
+              <div><span>Recebido até D+60</span><strong id="mD60">R$ 0,00</strong></div>
+              <div><span>Saldo posterior</span><strong id="mSaldo">R$ 0,00</strong></div>
+            </div>
+          </div>
+
+          <div class="card timeline-card">
+            <div class="card-header compact"><h2>Fluxo do pagamento</h2></div>
+            <div class="timeline" id="timeline"></div>
+          </div>
+
+          <div class="card insight-card">
+            <div class="card-header compact"><h2>Leitura do cenário</h2></div>
+            <div id="insightText" class="insight-text"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-comparador">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="card-kicker">COMPARAÇÃO</span>
+            <h2>Compare cenários lado a lado</h2>
+          </div>
+          <div class="top-actions">
+            <button class="secondary-btn" id="btnAddCurrent">Adicionar cenário atual</button>
+            <button class="ghost-btn danger" id="btnClearCompare">Limpar comparação</button>
+          </div>
+        </div>
+        <div class="compare-toolbar">
+          <label>Base da comparação
+            <select id="compareBase">
+              <option value="same">Manter mesma dívida e comparar condições</option>
+            </select>
+          </label>
+          <label>Objetivo de leitura
+            <select id="compareObjective">
+              <option value="cash">Maximizar caixa na entrada</option>
+              <option value="recovery">Maximizar valor recuperado</option>
+              <option value="discount">Minimizar desconto</option>
+              <option value="balance">Equilibrar entrada e parcelas</option>
+              <option value="manual">Comparação manual</option>
+            </select>
+          </label>
+        </div>
+        <div class="compare-table-wrap">
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>Indicador</th>
+                <th id="headC0">Cenário 1</th>
+                <th id="headC1">Cenário 2</th>
+                <th id="headC2">Cenário 3</th>
+                <th id="headC3">Cenário 4</th>
+              </tr>
+            </thead>
+            <tbody id="compareBody"></tbody>
+          </table>
+        </div>
+        <div class="compare-bars" id="compareBars"></div>
+        <p class="compare-note">O simulador não define automaticamente uma "melhor" política. A comparação mostra os efeitos financeiros de cada cenário para que a área possa decidir qual objetivo priorizar.</p>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-politicas">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="card-kicker">REFERÊNCIA</span>
+            <h2>Políticas oficiais cadastradas</h2>
+          </div>
+          <span class="badge official">Fonte: matriz enviada</span>
+        </div>
+        <div class="policy-grid" id="policyCards"></div>
+        <div class="policy-footnote">
+          <strong>Regra de reparcelamento atual:</strong> um novo parcelamento somente deve ser disponibilizado após a quitação completa do acordo anterior. A simulação não libera um novo acordo enquanto o acordo vigente estiver em aberto.
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="tab-historico">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <span class="card-kicker">HISTÓRICO</span>
+            <h2>Cenários salvos neste navegador</h2>
+          </div>
+          <button class="ghost-btn danger" id="btnClearHistory">Excluir histórico</button>
+        </div>
+        <div id="historyList" class="history-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="saveDialog" class="modal">
+    <form method="dialog" id="saveForm" class="modal-content">
+      <div class="modal-header">
+        <h3>Salvar cenário</h3>
+        <button value="cancel" class="icon-btn" aria-label="Fechar">×</button>
+      </div>
+      <label>Nome do cenário
+        <input id="scenarioName" required maxlength="60" placeholder="Ex.: Nova política 2026 - 50% entrada">
+      </label>
+      <div class="modal-actions">
+        <button value="cancel" class="secondary-btn">Cancelar</button>
+        <button id="confirmSave" value="default" class="primary-btn">Salvar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
