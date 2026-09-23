@@ -27,18 +27,18 @@
       <div>
         <span class="eyebrow">MASTER · COBRANÇA</span>
         <h1>Compare políticas, descontos e estruturas de pagamento</h1>
-        <p>Teste valores, tipo de desconto, quantidade de boletos e valor de entrada sem alterar a planilha original.</p>
+        <p>Monte cenários, altere desconto no original ou nos juros e visualize imediatamente o impacto na entrada, no parcelamento e no valor recuperado.</p>
       </div>
       <div class="hero-note">
         <span class="status-dot"></span>
         <div>
-          <strong>Modo de simulação</strong>
-          <small>Os cenários aqui criados são comparativos e não alteram a política oficial.</small>
+          <strong>Simulação independente</strong>
+          <small>Os testes realizados aqui não alteram a política oficial nem a planilha de referência.</small>
         </div>
       </div>
     </section>
 
-    <nav class="tabs">
+    <nav class="tabs" aria-label="Seções do simulador">
       <button class="tab active" data-tab="simulador">Simulador</button>
       <button class="tab" data-tab="comparador">Comparador</button>
       <button class="tab" data-tab="politicas">Políticas oficiais</button>
@@ -53,12 +53,11 @@
               <span class="card-kicker">1 · CENÁRIO</span>
               <h2>Configure a negociação</h2>
             </div>
-            <span class="badge" id="policyBadge">Política livre</span>
+            <span class="badge" id="policyBadge">Simulação livre</span>
           </div>
 
-          <div class="section-block">
-            <h3>Dados da dívida</h3>
-            <div class="form-grid two">
+          <div class="scenario-top">
+            <div class="form-grid two compact-grid">
               <label>Perfil
                 <select id="perfil">
                   <option value="B2C">B2C</option>
@@ -74,31 +73,65 @@
                   <option value="2026">2026</option>
                 </select>
               </label>
+            </div>
+            <label class="scenario-name">Nome do cenário (opcional)
+              <input id="scenarioName" maxlength="60" placeholder="Ex.: Teste 50% entrada / 25% juros">
+            </label>
+          </div>
+
+          <div class="section-block preset-block">
+            <div class="section-title-row">
+              <div>
+                <h3>Política de referência</h3>
+                <p class="section-subtitle">Selecione um modelo para aplicar de uma só vez modalidade, descontos, forma de pagamento, parcelas e entrada.</p>
+              </div>
+            </div>
+            <div class="preset-grid" id="presetButtons"></div>
+          </div>
+
+          <div class="section-block">
+            <h3>Valores da dívida</h3>
+            <div class="form-grid two">
               <label>Valor original (R$)
-                <input id="original" type="number" min="0" step="0.01" value="1000">
+                <input id="original" type="number" min="0" step="0.01" value="600">
               </label>
               <label>Juros / multas (R$)
-                <input id="juros" type="number" min="0" step="0.01" value="100">
+                <input id="juros" type="number" min="0" step="0.01" value="0">
               </label>
             </div>
           </div>
 
           <div class="section-block">
-            <h3>Política de desconto</h3>
-            <div class="form-grid two">
-              <label>Tipo de desconto
-                <select id="tipoDesconto">
-                  <option value="total">Sobre original + juros</option>
-                  <option value="juros">Somente sobre juros</option>
-                  <option value="original">Somente sobre original</option>
-                  <option value="none">Sem desconto</option>
-                </select>
-              </label>
-              <label>Taxa de desconto (%)
-                <input id="desconto" type="number" min="0" max="100" step="0.1" value="0">
-              </label>
+            <h3>Descontos separados</h3>
+            <div class="discount-split">
+              <div class="discount-control original-control">
+                <div class="discount-heading">
+                  <div>
+                    <strong>Desconto sobre o original</strong>
+                    <span>Incide somente sobre o valor original da dívida.</span>
+                  </div>
+                  <output id="origRateDisplay">0%</output>
+                </div>
+                <div class="inline-input">
+                  <input id="descontoOriginal" type="number" min="0" max="100" step="0.1" value="0">
+                  <span>%</span>
+                </div>
+              </div>
+              <div class="discount-control interest-control">
+                <div class="discount-heading">
+                  <div>
+                    <strong>Desconto sobre juros / multas</strong>
+                    <span>Incide somente sobre juros, multas e encargos.</span>
+                  </div>
+                  <output id="jurosRateDisplay">0%</output>
+                </div>
+                <div class="inline-input">
+                  <input id="descontoJuros" type="number" min="0" max="100" step="0.1" value="0">
+                  <span>%</span>
+                </div>
+              </div>
             </div>
-            <div class="quick-pills" id="discountPills"></div>
+            <div class="discount-summary" id="discountSummary">Desconto total: R$ 0,00</div>
           </div>
 
           <div class="section-block">
@@ -110,14 +143,14 @@
                   <option value="avista">À vista</option>
                 </select>
               </label>
-              <label>Método
+              <label>Método de pagamento
                 <select id="metodo">
                   <option value="boleto">Boleto</option>
                   <option value="pix">PIX</option>
                   <option value="cartao">Cartão</option>
                 </select>
               </label>
-              <label>Quantidade de boletos / parcelas
+              <label id="parcelasWrap">Quantidade de boletos / parcelas
                 <select id="parcelas">
                   <option value="1">1</option>
                   <option value="2">2</option>
@@ -129,22 +162,22 @@
                   <option value="8">8</option>
                 </select>
               </label>
-              <label>Valor de entrada (%)
+              <label id="entradaWrap">Valor de entrada (%)
                 <input id="entradaPct" type="number" min="0" max="100" step="0.1" value="50">
               </label>
             </div>
+            <div class="payment-rule" id="paymentRule"></div>
             <div class="validation" id="validationBox"></div>
           </div>
 
           <div class="section-block">
-            <h3>Estrutura do acordo</h3>
+            <div class="section-title-row">
+              <div>
+                <h3>Estrutura do acordo</h3>
+                <p class="section-subtitle">A entrada é aplicada sobre o valor líquido. O saldo restante é distribuído pelas parcelas subsequentes.</p>
+              </div>
+            </div>
             <div class="schedule-preview" id="schedulePreview"></div>
-            <p class="helper">No modo livre, a entrada é fixa e o saldo restante é distribuído igualmente entre as parcelas seguintes. Para 3 parcelas, a configuração padrão da política atual é 50% + 25% + 25%.</p>
-          </div>
-
-          <div class="action-row">
-            <button class="secondary-btn" id="btnApplyPolicy">Carregar política oficial</button>
-            <button class="primary-btn" id="btnSimular">Atualizar simulação</button>
           </div>
         </div>
 
@@ -159,11 +192,13 @@
             </div>
             <div class="kpi-grid">
               <div class="kpi"><span>Valor bruto</span><strong id="kpiBruto">R$ 0,00</strong></div>
-              <div class="kpi"><span>Desconto</span><strong id="kpiDesconto">R$ 0,00</strong></div>
+              <div class="kpi"><span>Desconto total</span><strong id="kpiDesconto">R$ 0,00</strong></div>
               <div class="kpi accent"><span>Valor líquido</span><strong id="kpiLiquido">R$ 0,00</strong></div>
               <div class="kpi accent2"><span>Entrada</span><strong id="kpiEntrada">R$ 0,00</strong></div>
             </div>
             <div class="mini-metrics">
+              <div><span>Desconto no original</span><strong id="mDescOriginal">R$ 0,00</strong></div>
+              <div><span>Desconto nos juros</span><strong id="mDescJuros">R$ 0,00</strong></div>
               <div><span>Desconto efetivo</span><strong id="mDesconto">0%</strong></div>
               <div><span>Recebido até D+30</span><strong id="mD30">R$ 0,00</strong></div>
               <div><span>Recebido até D+60</span><strong id="mD60">R$ 0,00</strong></div>
@@ -186,32 +221,34 @@
 
     <section class="tab-panel" id="tab-comparador">
       <div class="card">
-        <div class="card-header">
+        <div class="card-header comparator-header">
           <div>
             <span class="card-kicker">COMPARAÇÃO</span>
-            <h2>Compare cenários lado a lado</h2>
+            <h2>Compare os cenários e destaque o que deseja analisar</h2>
           </div>
           <div class="top-actions">
             <button class="secondary-btn" id="btnAddCurrent">Adicionar cenário atual</button>
             <button class="ghost-btn danger" id="btnClearCompare">Limpar comparação</button>
           </div>
         </div>
-        <div class="compare-toolbar">
-          <label>Base da comparação
-            <select id="compareBase">
-              <option value="same">Manter mesma dívida e comparar condições</option>
-            </select>
-          </label>
-          <label>Objetivo de leitura
-            <select id="compareObjective">
-              <option value="cash">Maximizar caixa na entrada</option>
-              <option value="recovery">Maximizar valor recuperado</option>
-              <option value="discount">Minimizar desconto</option>
-              <option value="balance">Equilibrar entrada e parcelas</option>
-              <option value="manual">Comparação manual</option>
-            </select>
-          </label>
+
+        <div class="compare-summary" id="compareSummary">
+          <div><span>Cenários</span><strong id="compareCount">0</strong></div>
+          <div><span>Critério destacado</span><strong id="compareHighlightLabel">Nenhum</strong></div>
+          <div><span>Base</span><strong>Mesma dívida</strong></div>
         </div>
+
+        <div class="highlight-toolbar">
+          <span class="toolbar-label">Destacar:</span>
+          <button class="highlight-btn active" data-highlight="none">Nenhum</button>
+          <button class="highlight-btn" data-highlight="liquido">Maior valor líquido</button>
+          <button class="highlight-btn" data-highlight="entrada">Maior entrada</button>
+          <button class="highlight-btn" data-highlight="descontoTotal">Menor desconto total</button>
+          <button class="highlight-btn" data-highlight="descontoOriginal">Menor desconto no original</button>
+          <button class="highlight-btn" data-highlight="descontoJuros">Menor desconto nos juros</button>
+          <button class="highlight-btn" data-highlight="parcelas">Menos parcelas</button>
+        </div>
+
         <div class="compare-table-wrap">
           <table class="compare-table">
             <thead>
@@ -226,8 +263,10 @@
             <tbody id="compareBody"></tbody>
           </table>
         </div>
+
         <div class="compare-bars" id="compareBars"></div>
-        <p class="compare-note">O simulador não define automaticamente uma "melhor" política. A comparação mostra os efeitos financeiros de cada cenário para que a área possa decidir qual objetivo priorizar.</p>
+        <div class="compare-detail" id="compareDetail"></div>
+        <p class="compare-note">Use os botões de destaque para realçar visualmente o critério que deseja observar. O sistema não define uma política como melhor de forma automática.</p>
       </div>
     </section>
 
@@ -242,7 +281,7 @@
         </div>
         <div class="policy-grid" id="policyCards"></div>
         <div class="policy-footnote">
-          <strong>Regra de reparcelamento atual:</strong> um novo parcelamento somente deve ser disponibilizado após a quitação completa do acordo anterior. A simulação não libera um novo acordo enquanto o acordo vigente estiver em aberto.
+          <strong>Regra operacional atual:</strong> o novo parcelamento somente deve ocorrer após a quitação completa do acordo anterior. A estrutura de descontos é apresentada separando o impacto no valor original e nos juros/multas.
         </div>
       </div>
     </section>
@@ -268,11 +307,11 @@
         <button value="cancel" class="icon-btn" aria-label="Fechar">×</button>
       </div>
       <label>Nome do cenário
-        <input id="scenarioName" required maxlength="60" placeholder="Ex.: Nova política 2026 - 50% entrada">
+        <input id="scenarioNameSave" required maxlength="60" placeholder="Ex.: 2026 - 50% entrada">
       </label>
       <div class="modal-actions">
         <button value="cancel" class="secondary-btn">Cancelar</button>
-        <button id="confirmSave" value="default" class="primary-btn">Salvar</button>
+        <button value="default" class="primary-btn">Salvar</button>
       </div>
     </form>
   </dialog>
